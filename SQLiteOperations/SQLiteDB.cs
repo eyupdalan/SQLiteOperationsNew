@@ -32,6 +32,8 @@ namespace SQLiteOperations
             }
         }
 
+        #region Insert Operations
+
         public void InsertData(string tableName, SQLiteParameter[] parameters)
         {
             try
@@ -40,7 +42,7 @@ namespace SQLiteOperations
 
                 Connection.Open();
                 SQLiteCommand command = new SQLiteCommand(insertCommand, Connection);
-                command.ExecuteNonQuery();                
+                command.ExecuteNonQuery();
             }
             catch (SQLiteException)
             {
@@ -81,5 +83,65 @@ namespace SQLiteOperations
 
             return firstPart + secondPart;
         }
+
+        #endregion
+
+        #region Update Operations
+
+        public void UpdateData(string tableName, SQLiteParameter[] updateParameters, SQLiteParameter[] updateConditions)
+        {
+            try
+            {
+                string updateCommand = createUpdateScript(tableName, updateParameters, updateConditions);
+
+                Connection.Open();
+                SQLiteCommand command = new SQLiteCommand(updateCommand, Connection);
+                command.ExecuteNonQuery();
+            }
+            catch (SQLiteException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (Connection.State == System.Data.ConnectionState.Open)
+                {
+                    Connection.Close();
+                }
+            }
+        }
+
+        public string createUpdateScript(string tableName, SQLiteParameter[] updateParameters, SQLiteParameter[] updateConditions)
+        {
+            StringBuilder stringBuilder1 = new StringBuilder();
+            StringBuilder stringBuilder2 = new StringBuilder();
+
+            stringBuilder1.Append("update  " + tableName + " set ");
+            stringBuilder2.Append(" where");
+
+            foreach (SQLiteParameter item in updateParameters)
+            {
+                stringBuilder1.Append(item.ParameterName + " = " + item.ParameterValue.ToString() + ", ");
+            }
+
+            foreach (SQLiteParameter item in updateConditions)
+            {
+                stringBuilder2.Append(item.ParameterName + " = " + item.ParameterValue + " AND ");
+            }
+
+            string firstPart = stringBuilder1.ToString();
+            firstPart = firstPart.Substring(0, firstPart.Length - 2) + ")";
+
+            string secondPart = stringBuilder2.ToString();
+            secondPart = secondPart.Substring(0, secondPart.Length - 5) + ")";
+
+            return firstPart + secondPart;
+        }
+
+        #endregion
     }
 }
